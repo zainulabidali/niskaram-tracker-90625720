@@ -94,7 +94,7 @@ export function isEditableDate(dateStr: string, isAdmin: boolean): boolean {
 
 export async function getClasses(): Promise<ClassData[]> {
   const snap = await getDocs(collection(db, "classes"));
-  return snap.docs.map(d => ({ id: d.id, ...d.data() } as ClassData));
+  return snap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<ClassData, 'id'>) }));
 }
 
 export async function addClass(name: string): Promise<string> {

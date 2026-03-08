@@ -28,7 +28,7 @@ const Index = () => {
                 {new Date().toLocaleDateString("ml-IN", { weekday: "long", day: "numeric", month: "long" })}
               </p>
             </div>
-            <div className="text-4xl opacity-80">☪️</div>
+            <div className="text-4xl opacity-80"></div>
           </div>
         </div>
 

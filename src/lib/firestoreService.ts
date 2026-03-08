@@ -97,7 +97,13 @@ export async function getClasses(): Promise<ClassData[]> {
   return snap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<ClassData, 'id'>) }));
 }
 
+export async function classExists(name: string): Promise<boolean> {
+  const classes = await getClasses();
+  return classes.some(c => c.name.trim().toLowerCase() === name.trim().toLowerCase());
+}
+
 export async function addClass(name: string): Promise<string> {
+  if (await classExists(name)) throw new Error("DUPLICATE");
   const docRef = await addDoc(collection(db, "classes"), { name });
   return docRef.id;
 }

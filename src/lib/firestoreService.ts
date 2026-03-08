@@ -121,7 +121,7 @@ export async function getStudents(classId?: string): Promise<StudentData[]> {
     q = collection(db, "students");
   }
   const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() } as StudentData));
+  return snap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<StudentData, 'id'>) }));
 }
 
 export async function addStudent(name: string, classId: string): Promise<string> {

@@ -152,7 +152,13 @@ export async function getSubjects(): Promise<SubjectData[]> {
   return snap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<SubjectData, 'id'>) }));
 }
 
+export async function subjectExists(name: string): Promise<boolean> {
+  const subjects = await getSubjects();
+  return subjects.some(s => s.name.trim().toLowerCase() === name.trim().toLowerCase());
+}
+
 export async function addSubject(name: string): Promise<string> {
+  if (await subjectExists(name)) throw new Error("DUPLICATE");
   const docRef = await addDoc(collection(db, "subjects"), { name });
   return docRef.id;
 }

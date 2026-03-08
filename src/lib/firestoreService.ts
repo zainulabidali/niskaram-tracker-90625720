@@ -97,7 +97,13 @@ export async function getClasses(): Promise<ClassData[]> {
   return snap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<ClassData, 'id'>) }));
 }
 
+export async function classExists(name: string): Promise<boolean> {
+  const classes = await getClasses();
+  return classes.some(c => c.name.trim().toLowerCase() === name.trim().toLowerCase());
+}
+
 export async function addClass(name: string): Promise<string> {
+  if (await classExists(name)) throw new Error("DUPLICATE");
   const docRef = await addDoc(collection(db, "classes"), { name });
   return docRef.id;
 }
@@ -124,7 +130,13 @@ export async function getStudents(classId?: string): Promise<StudentData[]> {
   return snap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<StudentData, 'id'>) }));
 }
 
+export async function studentExistsInClass(name: string, classId: string): Promise<boolean> {
+  const students = await getStudents(classId);
+  return students.some(s => s.name.trim().toLowerCase() === name.trim().toLowerCase());
+}
+
 export async function addStudent(name: string, classId: string): Promise<string> {
+  if (await studentExistsInClass(name, classId)) throw new Error("DUPLICATE");
   const docRef = await addDoc(collection(db, "students"), { name, classId });
   return docRef.id;
 }
@@ -140,7 +152,13 @@ export async function getSubjects(): Promise<SubjectData[]> {
   return snap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<SubjectData, 'id'>) }));
 }
 
+export async function subjectExists(name: string): Promise<boolean> {
+  const subjects = await getSubjects();
+  return subjects.some(s => s.name.trim().toLowerCase() === name.trim().toLowerCase());
+}
+
 export async function addSubject(name: string): Promise<string> {
+  if (await subjectExists(name)) throw new Error("DUPLICATE");
   const docRef = await addDoc(collection(db, "subjects"), { name });
   return docRef.id;
 }

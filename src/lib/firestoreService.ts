@@ -137,7 +137,7 @@ export async function deleteStudent(id: string): Promise<void> {
 
 export async function getSubjects(): Promise<SubjectData[]> {
   const snap = await getDocs(collection(db, "subjects"));
-  return snap.docs.map(d => ({ id: d.id, ...d.data() } as SubjectData));
+  return snap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<SubjectData, 'id'>) }));
 }
 
 export async function addSubject(name: string): Promise<string> {

@@ -1,9 +1,12 @@
 import { useMemo } from "react";
 import MobileLayout from "@/components/MobileLayout";
 import { getPrayerData, CLASSES } from "@/lib/prayerData";
-import { Users, Calendar, TrendingUp, Award } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { Users, Calendar, TrendingUp, Award, LogOut } from "lucide-react";
 
 const Profile = () => {
+  const { user, logout } = useAuth();
+
   const stats = useMemo(() => {
     const data = getPrayerData();
     let totalEntries = 0;
@@ -38,18 +41,18 @@ const Profile = () => {
   return (
     <MobileLayout>
       <div className="space-y-5">
-        <h2 className="text-xl font-display font-bold text-foreground text-center pt-2">
-          👤 പ്രൊഫൈൽ
-        </h2>
+        <h2 className="text-xl font-display font-bold text-foreground text-center pt-2">👤 പ്രൊഫൈൽ</h2>
 
-        {/* App Info Card */}
+        {/* User Card */}
         <div className="rounded-2xl bg-primary p-5 text-primary-foreground shadow-lg text-center">
-          <div className="text-4xl mb-2">🕌</div>
+          <div className="w-16 h-16 rounded-full bg-primary-foreground/20 flex items-center justify-center mx-auto mb-3 text-2xl">
+            🕌
+          </div>
           <h3 className="font-display text-lg font-bold">നിസ്കാരം ട്രാക്കർ</h3>
-          <p className="text-xs opacity-80 mt-1">Daily Prayer Tracking System</p>
+          <p className="text-xs opacity-80 mt-1">{user?.email}</p>
         </div>
 
-        {/* Stats Grid */}
+        {/* Stats */}
         <div className="grid grid-cols-2 gap-3">
           {statCards.map(({ icon: Icon, label, value, color }) => (
             <div key={label} className="rounded-2xl border border-border bg-card/80 p-4 shadow-sm">
@@ -62,15 +65,18 @@ const Profile = () => {
           ))}
         </div>
 
-        {/* Admin Link */}
-        <a
-          href="/admin"
-          className="block text-center py-3 rounded-2xl border border-border bg-card/80 text-sm font-medium text-foreground hover:bg-muted transition-colors"
-        >
+        {/* Admin */}
+        <a href="/admin" className="block text-center py-3 rounded-2xl border border-border bg-card/80 text-sm font-medium text-foreground hover:bg-muted transition-colors">
           🔐 Admin Panel
         </a>
 
-        {/* Footer */}
+        {/* Logout */}
+        <button onClick={logout}
+          className="w-full py-3 rounded-2xl border border-destructive text-destructive font-bold text-sm flex items-center justify-center gap-2 hover:bg-destructive/10 transition-colors"
+        >
+          <LogOut size={16} /> ലോഗ് ഔട്ട്
+        </button>
+
         <div className="text-center text-[10px] text-muted-foreground pt-2">
           <p>Designed by <a href="https://instagram.com/zainul_abid_himami" target="_blank" rel="noreferrer" className="text-accent hover:underline">Zainul Abid Himami</a></p>
           <p className="mt-1">v1.0 · © {new Date().getFullYear()} Zyn</p>

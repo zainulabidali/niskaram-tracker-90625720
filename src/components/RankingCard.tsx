@@ -13,27 +13,34 @@ const ICONS = ["🏆", "🥈", "🥉"];
 
 const RankingCard = ({ title, days, topN, classFilter, refreshKey }: RankingProps) => {
   const [performers, setPerformers] = useState<{ name: string; score: number }[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setPerformers(getTopPerformers(days, topN, classFilter));
+    setLoading(true);
+    getTopPerformers(days, topN, classFilter).then(data => {
+      setPerformers(data);
+      setLoading(false);
+    });
   }, [days, topN, classFilter, refreshKey]);
 
   return (
-    <div className="rounded-xl border border-border bg-card/80 backdrop-blur-sm p-5 shadow-sm">
-      <h3 className="font-display text-lg font-bold text-accent mb-3">{title}</h3>
-      {performers.length === 0 ? (
-        <p className="text-muted-foreground text-sm">ഡാറ്റ ഇല്ല</p>
+    <div className="rounded-2xl border border-border bg-card/80 backdrop-blur-sm p-4 shadow-sm">
+      <h3 className="font-display text-base font-bold text-accent mb-3">{title}</h3>
+      {loading ? (
+        <p className="text-muted-foreground text-xs animate-pulse">ലോഡ് ചെയ്യുന്നു...</p>
+      ) : performers.length === 0 ? (
+        <p className="text-muted-foreground text-xs">ഡാറ്റ ഇല്ല</p>
       ) : (
-        <ul className="space-y-2">
+        <ul className="space-y-1.5">
           {performers.map((p, i) => (
             <li
               key={p.name}
-              className="flex items-center justify-between rounded-lg px-3 py-2 bg-muted/50"
+              className="flex items-center justify-between rounded-xl px-3 py-2 bg-muted/50"
             >
-              <span className="text-sm font-medium">
+              <span className="text-xs font-medium">
                 {ICONS[i] || "🔹"} {p.name}
               </span>
-              <span className="text-xs font-bold text-accent bg-accent/10 px-2 py-1 rounded-full">
+              <span className="text-[10px] font-bold text-accent bg-accent/10 px-2 py-0.5 rounded-full">
                 {p.score} മാർക്ക്
               </span>
             </li>

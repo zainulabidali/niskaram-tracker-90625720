@@ -26,7 +26,6 @@ const AdminPanel = () => {
     <div className="space-y-4">
       <h2 className="text-xl font-display font-bold text-foreground text-center pt-2">📊 Admin Panel</h2>
 
-      {/* Tab Bar */}
       <div className="flex gap-1 bg-muted/50 p-1 rounded-2xl">
         {tabs.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
@@ -167,7 +166,7 @@ function StudentManager({ toast }: { toast: any }) {
   const [adding, setAdding] = useState(false);
 
   useEffect(() => { getClasses().then(c => { setClasses(c); setLoading(false); }).catch(() => setLoading(false)); }, []);
-  
+
   const reloadStudents = () => {
     if (!selectedClass) { setStudents([]); return; }
     setLoading(true);
@@ -233,28 +232,37 @@ function StudentManager({ toast }: { toast: any }) {
   );
 }
 
-// ====== SUBJECT MANAGER ======
+// ====== SUBJECT MANAGER (CLASS-BASED) ======
 function SubjectManager({ toast }: { toast: any }) {
+  const [classes, setClasses] = useState<ClassData[]>([]);
+  const [selectedClass, setSelectedClass] = useState("");
   const [subjects, setSubjects] = useState<SubjectData[]>([]);
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
 
-  const reload = () => { setLoading(true); getSubjects().then(s => { setSubjects(s); setLoading(false); }).catch(() => setLoading(false)); };
-  useEffect(reload, []);
+  useEffect(() => { getClasses().then(c => { setClasses(c); setLoading(false); }).catch(() => setLoading(false)); }, []);
+
+  const reloadSubjects = () => {
+    if (!selectedClass) { setSubjects([]); return; }
+    setLoading(true);
+    getSubjects(selectedClass).then(s => { setSubjects(s); setLoading(false); }).catch(() => setLoading(false));
+  };
+  useEffect(reloadSubjects, [selectedClass]);
 
   const handleAdd = async () => {
     const trimmed = name.trim();
     if (!trimmed) { toast({ title: "⚠️ പേര് ടൈപ്പ് ചെയ്യുക", variant: "destructive" }); return; }
+    if (!selectedClass) { toast({ title: "⚠️ ക്ലാസ് തിരഞ്ഞെടുക്കുക", variant: "destructive" }); return; }
     setAdding(true);
     try {
-      await addSubject(trimmed);
+      await addSubject(trimmed, selectedClass);
       setName("");
-      reload();
+      reloadSubjects();
       toast({ title: "✅ വിഷയം ചേർത്തു" });
     } catch (err: any) {
       if (err.message === "DUPLICATE") {
-        toast({ title: "⚠️ ഈ വിഷയം ഇതിനകം ഉണ്ട്", variant: "destructive" });
+        toast({ title: "⚠️ ഈ വിഷയം ഈ ക്ലാസിൽ ഇതിനകം ഉണ്ട്", variant: "destructive" });
       } else {
         toast({ title: "❌ ചേർക്കൽ പിശക്", description: err.message, variant: "destructive" });
       }
@@ -263,25 +271,39 @@ function SubjectManager({ toast }: { toast: any }) {
     }
   };
 
+  const className = classes.find(c => c.id === selectedClass)?.name;
+
   return (
     <div className="space-y-3">
-      <AddRow value={name} onChange={setName} onAdd={handleAdd} placeholder="വിഷയം പേര്..." loading={adding} />
-      {loading ? <Loader2 className="animate-spin mx-auto text-muted-foreground" /> : (
+      <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)}
+        className="w-full px-4 py-3 rounded-2xl bg-muted/50 border border-border text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none"
+      >
+        <option value="">ക്ലാസ് തിരഞ്ഞെടുക്കുക</option>
+        {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+      </select>
+
+      {selectedClass && (
         <>
-          <SectionCount count={subjects.length} label="വിഷയങ്ങൾ" />
-          <div className="space-y-2">
-            {subjects.map(s => (
-              <ItemCard key={s.id} label={s.name}
-                onDelete={async () => {
-                  try { await deleteSubject(s.id); reload(); toast({ title: "🗑 ഡിലീറ്റ്" }); }
-                  catch { toast({ title: "❌ ഡിലീറ്റ് പിശക്", variant: "destructive" }); }
-                }}
-              />
-            ))}
-            {subjects.length === 0 && <EmptyState message="വിഷയങ്ങൾ ഇല്ല" />}
-          </div>
+          <AddRow value={name} onChange={setName} onAdd={handleAdd} placeholder="വിഷയം പേര്..." loading={adding} />
+          {loading ? <Loader2 className="animate-spin mx-auto text-muted-foreground" /> : (
+            <>
+              <SectionCount count={subjects.length} label={`${className || ""} വിഷയങ്ങൾ`} />
+              <div className="space-y-2">
+                {subjects.map(s => (
+                  <ItemCard key={s.id} label={s.name} sublabel={className}
+                    onDelete={async () => {
+                      try { await deleteSubject(s.id); reloadSubjects(); toast({ title: "🗑 ഡിലീറ്റ്" }); }
+                      catch { toast({ title: "❌ ഡിലീറ്റ് പിശക്", variant: "destructive" }); }
+                    }}
+                  />
+                ))}
+                {subjects.length === 0 && <EmptyState message="വിഷയങ്ങൾ ഇല്ല" />}
+              </div>
+            </>
+          )}
         </>
       )}
+      {!selectedClass && !loading && <EmptyState message="ക്ലാസ് തിരഞ്ഞെടുക്കുക" />}
     </div>
   );
 }

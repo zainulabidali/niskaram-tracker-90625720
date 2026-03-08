@@ -20,6 +20,7 @@ export type StudentData = {
 export type SubjectData = {
   id: string;
   name: string;
+  classId: string;
 };
 
 // Prayer status: 'jamaat' | 'individual' | 'not_prayed'
@@ -109,10 +110,11 @@ export async function addClass(name: string): Promise<string> {
 }
 
 export async function deleteClass(id: string): Promise<void> {
-  // Also delete students in this class
   const studentsSnap = await getDocs(query(collection(db, "students"), where("classId", "==", id)));
+  const subjectsSnap = await getDocs(query(collection(db, "subjects"), where("classId", "==", id)));
   const batch = writeBatch(db);
   studentsSnap.docs.forEach(d => batch.delete(d.ref));
+  subjectsSnap.docs.forEach(d => batch.delete(d.ref));
   batch.delete(doc(db, "classes", id));
   await batch.commit();
 }
@@ -145,21 +147,27 @@ export async function deleteStudent(id: string): Promise<void> {
   await deleteDoc(doc(db, "students", id));
 }
 
-// ====== SUBJECTS CRUD ======
+// ====== SUBJECTS CRUD (CLASS-BASED) ======
 
-export async function getSubjects(): Promise<SubjectData[]> {
-  const snap = await getDocs(collection(db, "subjects"));
+export async function getSubjects(classId?: string): Promise<SubjectData[]> {
+  let q;
+  if (classId) {
+    q = query(collection(db, "subjects"), where("classId", "==", classId));
+  } else {
+    q = collection(db, "subjects");
+  }
+  const snap = await getDocs(q);
   return snap.docs.map(d => ({ id: d.id, ...(d.data() as Omit<SubjectData, 'id'>) }));
 }
 
-export async function subjectExists(name: string): Promise<boolean> {
-  const subjects = await getSubjects();
+export async function subjectExistsInClass(name: string, classId: string): Promise<boolean> {
+  const subjects = await getSubjects(classId);
   return subjects.some(s => s.name.trim().toLowerCase() === name.trim().toLowerCase());
 }
 
-export async function addSubject(name: string): Promise<string> {
-  if (await subjectExists(name)) throw new Error("DUPLICATE");
-  const docRef = await addDoc(collection(db, "subjects"), { name });
+export async function addSubject(name: string, classId: string): Promise<string> {
+  if (await subjectExistsInClass(name, classId)) throw new Error("DUPLICATE");
+  const docRef = await addDoc(collection(db, "subjects"), { name, classId });
   return docRef.id;
 }
 
@@ -220,6 +228,13 @@ export async function getRecordsByDateRange(startDate: string, endDate: string, 
 
 export async function deleteRecord(studentId: string, date: string): Promise<void> {
   await deleteDoc(doc(db, "records", recordDocId(studentId, date)));
+}
+
+// ====== CUMULATIVE SCORE ======
+
+export async function getCumulativeScore(studentId: string): Promise<number> {
+  const records = await getRecordsByStudent(studentId);
+  return records.reduce((sum, r) => sum + (r.totalScore || 0), 0);
 }
 
 // ====== LEADERBOARD ======

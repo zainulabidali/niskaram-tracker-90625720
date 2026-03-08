@@ -1,27 +1,28 @@
 import { useEffect, useState } from "react";
-import { getTopPerformers } from "@/lib/prayerData";
+import { getLeaderboard, getDateRangeForPeriod, type LeaderEntry } from "@/lib/firestoreService";
 
 type RankingProps = {
   title: string;
-  days: number;
+  period: "daily" | "weekly" | "monthly";
   topN: number;
   classFilter?: string;
   refreshKey: number;
 };
 
-const ICONS = ["🏆", "🥈", "🥉"];
+const ICONS = ["🏆", "🥈", "🥉", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣"];
 
-const RankingCard = ({ title, days, topN, classFilter, refreshKey }: RankingProps) => {
-  const [performers, setPerformers] = useState<{ name: string; score: number }[]>([]);
+const RankingCard = ({ title, period, topN, classFilter, refreshKey }: RankingProps) => {
+  const [performers, setPerformers] = useState<LeaderEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    getTopPerformers(days, topN, classFilter).then(data => {
+    const { start, end } = getDateRangeForPeriod(period);
+    getLeaderboard(start, end, topN, classFilter).then(data => {
       setPerformers(data);
       setLoading(false);
     });
-  }, [days, topN, classFilter, refreshKey]);
+  }, [period, topN, classFilter, refreshKey]);
 
   return (
     <div className="rounded-2xl border border-border bg-card/80 backdrop-blur-sm p-4 shadow-sm">
@@ -33,15 +34,10 @@ const RankingCard = ({ title, days, topN, classFilter, refreshKey }: RankingProp
       ) : (
         <ul className="space-y-1.5">
           {performers.map((p, i) => (
-            <li
-              key={p.name}
-              className="flex items-center justify-between rounded-xl px-3 py-2 bg-muted/50"
-            >
-              <span className="text-xs font-medium">
-                {ICONS[i] || "🔹"} {p.name}
-              </span>
+            <li key={p.studentId} className="flex items-center justify-between rounded-xl px-3 py-2 bg-muted/50">
+              <span className="text-xs font-medium">{ICONS[i] || "🔹"} {p.studentName}</span>
               <span className="text-[10px] font-bold text-accent bg-accent/10 px-2 py-0.5 rounded-full">
-                {p.score} മാർക്ക്
+                {p.totalScore} pt
               </span>
             </li>
           ))}

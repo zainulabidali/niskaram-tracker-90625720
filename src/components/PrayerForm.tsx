@@ -33,7 +33,9 @@ const PrayerForm = ({ onSubmit }: { onSubmit: () => void }) => {
 
     const score = Object.values(prayers).filter(Boolean).length;
     savePrayerEntry({
-      name, class: selectedClass, gender, date, score, ...prayers,
+      name, class: selectedClass, gender, date, score,
+      fajr: prayers.fajr, dhuhr: prayers.dhuhr, asr: prayers.asr,
+      maghrib: prayers.maghrib, isha: prayers.isha,
     });
 
     toast({

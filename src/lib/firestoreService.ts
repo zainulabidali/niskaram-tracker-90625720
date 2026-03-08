@@ -207,23 +207,18 @@ export async function getRecordsByStudent(studentId: string): Promise<DailyRecor
 }
 
 export async function getRecordsByDateRange(startDate: string, endDate: string, classId?: string): Promise<DailyRecord[]> {
-  let q;
-  if (classId) {
-    q = query(
-      collection(db, "records"),
-      where("date", ">=", startDate),
-      where("date", "<=", endDate),
-      where("classId", "==", classId)
-    );
-  } else {
-    q = query(
-      collection(db, "records"),
-      where("date", ">=", startDate),
-      where("date", "<=", endDate)
-    );
-  }
+  // Avoid composite index requirement by querying date range only, then filtering client-side
+  const q = query(
+    collection(db, "records"),
+    where("date", ">=", startDate),
+    where("date", "<=", endDate)
+  );
   const snap = await getDocs(q);
-  return snap.docs.map(d => d.data() as DailyRecord);
+  let results = snap.docs.map(d => d.data() as DailyRecord);
+  if (classId) {
+    results = results.filter(r => r.classId === classId);
+  }
+  return results;
 }
 
 export async function deleteRecord(studentId: string, date: string): Promise<void> {

@@ -5,7 +5,7 @@ import {
   PRAYERS, getTodayStr,
   type DailyRecord, type ClassData, type StudentData,
 } from "@/lib/firestoreService";
-import { Sunrise, Sun, CloudSun, Sunset, Moon, Loader2, GraduationCap, User, CalendarDays, Search, X } from "lucide-react";
+import { Sunrise, Sun, CloudSun, Sunset, Moon, Loader2, GraduationCap, User, CalendarDays, Search, X, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 
 const PRAYER_ICONS = [Sunrise, Sun, CloudSun, Sunset, Moon];
@@ -23,7 +23,6 @@ const History = () => {
 
   useEffect(() => { getClasses().then(setClasses); }, []);
 
-  // Load students when class changes
   useEffect(() => {
     if (classFilter) {
       getStudents(classFilter).then(setStudents);
@@ -33,21 +32,19 @@ const History = () => {
     setStudentFilter("");
   }, [classFilter]);
 
-  // Load records based on filters
   useEffect(() => {
     setLoading(true);
 
     if (studentFilter) {
-      // Show all history for this student
       getRecordsByStudent(studentFilter).then(r => {
         setRecords(r.sort((a, b) => b.date.localeCompare(a.date)));
         setLoading(false);
-      });
+      }).catch(() => { setRecords([]); setLoading(false); });
     } else if (dateFilter) {
       getRecordsByDateRange(dateFilter, dateFilter, classFilter || undefined).then(r => {
         setRecords(r.sort((a, b) => a.studentName.localeCompare(b.studentName)));
         setLoading(false);
-      });
+      }).catch(() => { setRecords([]); setLoading(false); });
     } else {
       setRecords([]);
       setLoading(false);
@@ -61,11 +58,6 @@ const History = () => {
     s === "jamaat" ? "bg-green-500 text-white" :
     s === "individual" ? "bg-yellow-400 text-foreground" :
     "bg-destructive/20 text-destructive";
-
-  const statusDot = (s: string) =>
-    s === "jamaat" ? "bg-green-500" :
-    s === "individual" ? "bg-yellow-400" :
-    "bg-destructive/50";
 
   return (
     <MobileLayout>
@@ -117,52 +109,49 @@ const History = () => {
           </button>
         </div>
 
-        {/* Class Picker Modal */}
-        {showClassPicker && (
-          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end justify-center animate-fade-in" onClick={() => setShowClassPicker(false)}>
-            <div className="bg-card w-full max-w-lg rounded-t-3xl p-5 space-y-3 safe-bottom max-h-[70vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-              <div className="w-10 h-1 rounded-full bg-border mx-auto mb-2" />
-              <h3 className="text-sm font-bold text-center text-foreground">ക്ലാസ് തിരഞ്ഞെടുക്കുക</h3>
-              <button onClick={() => { setClassFilter(""); setShowClassPicker(false); }}
-                className="w-full p-3.5 rounded-2xl border border-border bg-card text-sm font-semibold text-left hover:bg-muted/50 transition-colors"
-              >എല്ലാ ക്ലാസുകളും</button>
-              {classes.map(c => (
-                <button key={c.id} onClick={() => { setClassFilter(c.id); setShowClassPicker(false); }}
-                  className={`w-full flex items-center gap-3 p-3.5 rounded-2xl border transition-all text-left ${
-                    classFilter === c.id ? "border-primary bg-primary/5" : "border-border bg-card hover:bg-muted/50"
-                  }`}
-                >
-                  <GraduationCap size={18} className="text-primary" />
-                  <span className="text-sm font-semibold">{c.name}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Bottom Sheet Modals */}
+        <BottomSheetPicker
+          show={showClassPicker}
+          onClose={() => setShowClassPicker(false)}
+          title="ക്ലാസ് തിരഞ്ഞെടുക്കുക"
+        >
+          <button onClick={() => { setClassFilter(""); setShowClassPicker(false); }}
+            className="w-full p-3.5 rounded-2xl border border-border bg-card text-sm font-semibold text-left hover:bg-muted/50 transition-colors"
+          >എല്ലാ ക്ലാസുകളും</button>
+          {classes.map(c => (
+            <button key={c.id} onClick={() => { setClassFilter(c.id); setShowClassPicker(false); }}
+              className={`w-full flex items-center gap-3 p-3.5 rounded-2xl border transition-all text-left ${
+                classFilter === c.id ? "border-primary bg-primary/5" : "border-border bg-card hover:bg-muted/50"
+              }`}
+            >
+              <GraduationCap size={18} className="text-primary" />
+              <span className="text-sm font-semibold flex-1">{c.name}</span>
+              <ChevronRight size={16} className="text-muted-foreground" />
+            </button>
+          ))}
+        </BottomSheetPicker>
 
-        {/* Student Picker Modal */}
-        {showStudentPicker && (
-          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end justify-center animate-fade-in" onClick={() => setShowStudentPicker(false)}>
-            <div className="bg-card w-full max-w-lg rounded-t-3xl p-5 space-y-3 safe-bottom max-h-[70vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-              <div className="w-10 h-1 rounded-full bg-border mx-auto mb-2" />
-              <h3 className="text-sm font-bold text-center text-foreground">വിദ്യാർത്ഥി തിരഞ്ഞെടുക്കുക</h3>
-              <button onClick={() => { setStudentFilter(""); setShowStudentPicker(false); }}
-                className="w-full p-3.5 rounded-2xl border border-border bg-card text-sm font-semibold text-left hover:bg-muted/50 transition-colors"
-              >എല്ലാ വിദ്യാർത്ഥികളും</button>
-              {students.map(s => (
-                <button key={s.id} onClick={() => { setStudentFilter(s.id); setShowStudentPicker(false); }}
-                  className={`w-full flex items-center gap-3 p-3.5 rounded-2xl border transition-all text-left ${
-                    studentFilter === s.id ? "border-secondary bg-secondary/5" : "border-border bg-card hover:bg-muted/50"
-                  }`}
-                >
-                  <User size={18} className="text-secondary" />
-                  <span className="text-sm font-semibold">{s.name}</span>
-                </button>
-              ))}
-              {students.length === 0 && <p className="text-center text-xs text-muted-foreground py-4">വിദ്യാർത്ഥികൾ ഇല്ല</p>}
-            </div>
-          </div>
-        )}
+        <BottomSheetPicker
+          show={showStudentPicker}
+          onClose={() => setShowStudentPicker(false)}
+          title="വിദ്യാർത്ഥി തിരഞ്ഞെടുക്കുക"
+        >
+          <button onClick={() => { setStudentFilter(""); setShowStudentPicker(false); }}
+            className="w-full p-3.5 rounded-2xl border border-border bg-card text-sm font-semibold text-left hover:bg-muted/50 transition-colors"
+          >എല്ലാ വിദ്യാർത്ഥികളും</button>
+          {students.map(s => (
+            <button key={s.id} onClick={() => { setStudentFilter(s.id); setShowStudentPicker(false); }}
+              className={`w-full flex items-center gap-3 p-3.5 rounded-2xl border transition-all text-left ${
+                studentFilter === s.id ? "border-secondary bg-secondary/5" : "border-border bg-card hover:bg-muted/50"
+              }`}
+            >
+              <User size={18} className="text-secondary" />
+              <span className="text-sm font-semibold flex-1">{s.name}</span>
+              <ChevronRight size={16} className="text-muted-foreground" />
+            </button>
+          ))}
+          {students.length === 0 && <p className="text-center text-xs text-muted-foreground py-4">വിദ്യാർത്ഥികൾ ഇല്ല</p>}
+        </BottomSheetPicker>
 
         {/* Results */}
         {loading ? (
@@ -205,5 +194,29 @@ const History = () => {
     </MobileLayout>
   );
 };
+
+/* Reusable bottom sheet with proper scrolling */
+function BottomSheetPicker({ show, onClose, title, children }: {
+  show: boolean; onClose: () => void; title: string; children: React.ReactNode;
+}) {
+  if (!show) return null;
+  return (
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end justify-center animate-fade-in" onClick={onClose}>
+      <div
+        className="bg-card w-full max-w-lg rounded-t-3xl animate-slide-in-bottom flex flex-col"
+        style={{ maxHeight: '70vh' }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="p-5 pb-2 flex-shrink-0">
+          <div className="w-10 h-1 rounded-full bg-border mx-auto mb-3" />
+          <h3 className="text-sm font-bold text-center text-foreground">{title}</h3>
+        </div>
+        <div className="flex-1 overflow-y-auto px-5 pb-8 space-y-2" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 16px) + 2rem)' }}>
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default History;

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import MobileLayout from "@/components/MobileLayout";
-import { getPrayerData, PRAYERS, CLASSES, type PrayerEntry } from "@/lib/prayerData";
+import { getPrayerDataAsync, PRAYERS, CLASSES, type PrayerEntry } from "@/lib/prayerData";
 import { Sunrise, Sun, CloudSun, Sunset, Moon, Filter } from "lucide-react";
 
 const PRAYER_ICONS = [Sunrise, Sun, CloudSun, Sunset, Moon];
@@ -8,8 +8,11 @@ const PRAYER_ICONS = [Sunrise, Sun, CloudSun, Sunset, Moon];
 const History = () => {
   const [data, setData] = useState<Record<string, Record<string, PrayerEntry>>>({});
   const [classFilter, setClassFilter] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => setData(getPrayerData()), []);
+  useEffect(() => {
+    getPrayerDataAsync().then(d => { setData(d); setLoading(false); });
+  }, []);
 
   const entries = useMemo(() => {
     const result: (PrayerEntry & { dateKey: string })[] = [];
@@ -23,7 +26,6 @@ const History = () => {
     return result.sort((a, b) => b.dateKey.localeCompare(a.dateKey) || a.name.localeCompare(b.name));
   }, [data, classFilter]);
 
-  // Group by date
   const grouped = useMemo(() => {
     const map: Record<string, typeof entries> = {};
     entries.forEach(e => {
@@ -36,15 +38,11 @@ const History = () => {
   return (
     <MobileLayout>
       <div className="space-y-4">
-        <h2 className="text-xl font-display font-bold text-foreground text-center pt-2">
-          📜 ഹിസ്റ്ററി
-        </h2>
+        <h2 className="text-xl font-display font-bold text-foreground text-center pt-2">📜 ഹിസ്റ്ററി</h2>
 
         <div className="flex items-center gap-2">
           <Filter size={14} className="text-muted-foreground" />
-          <select
-            value={classFilter}
-            onChange={(e) => setClassFilter(e.target.value)}
+          <select value={classFilter} onChange={(e) => setClassFilter(e.target.value)}
             className="px-3 py-1.5 rounded-xl bg-muted/50 border border-border text-xs focus:ring-2 focus:ring-primary/30 focus:outline-none"
           >
             <option value="">എല്ലാ ക്ലാസുകളും</option>
@@ -52,7 +50,9 @@ const History = () => {
           </select>
         </div>
 
-        {Object.keys(grouped).length === 0 ? (
+        {loading ? (
+          <div className="text-center py-12 text-muted-foreground text-sm animate-pulse">ലോഡ് ചെയ്യുന്നു...</div>
+        ) : Object.keys(grouped).length === 0 ? (
           <div className="text-center py-12 text-muted-foreground text-sm">ഡാറ്റ ഇല്ല</div>
         ) : (
           Object.entries(grouped).map(([date, items]) => (
@@ -65,9 +65,7 @@ const History = () => {
                       <p className="text-sm font-semibold text-foreground">{e.name}</p>
                       <p className="text-[10px] text-muted-foreground">ക്ലാസ് {e.class}</p>
                     </div>
-                    <span className="text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full">
-                      {e.score}/5
-                    </span>
+                    <span className="text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full">{e.score}/5</span>
                   </div>
                   <div className="flex gap-2">
                     {PRAYERS.map((p, i) => {

@@ -1,15 +1,20 @@
 import { useState, useEffect, useMemo } from "react";
-import { getPrayerData, deletePrayerEntry, PRAYERS, CLASSES, type PrayerEntry } from "@/lib/prayerData";
+import { getPrayerDataAsync, deletePrayerEntry as deleteEntry, PRAYERS, CLASSES, type PrayerEntry } from "@/lib/prayerData";
 import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 const AdminPanel = () => {
   const [data, setData] = useState<Record<string, Record<string, PrayerEntry>>>({});
   const [search, setSearch] = useState("");
   const [classFilter, setClassFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  const reload = () => setData(getPrayerData());
+  const reload = () => {
+    setLoading(true);
+    getPrayerDataAsync().then(d => { setData(d); setLoading(false); });
+  };
   useEffect(reload, []);
 
   const entries = useMemo(() => {
@@ -26,8 +31,8 @@ const AdminPanel = () => {
     return result.sort((a, b) => b.dateKey.localeCompare(a.dateKey));
   }, [data, search, classFilter, dateFilter]);
 
-  const handleDelete = (date: string, name: string) => {
-    deletePrayerEntry(date, name);
+  const handleDelete = async (date: string, name: string) => {
+    await deleteEntry(date, name);
     reload();
     toast({ title: "ഡിലീറ്റ് ചെയ്തു", description: `${name} - ${date}` });
   };
@@ -42,90 +47,55 @@ const AdminPanel = () => {
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
-    a.download = "prayer-data.csv";
-    a.click();
+    a.href = url; a.download = "prayer-data.csv"; a.click();
   };
 
   return (
-    <div className="space-y-5">
-      <h2 className="text-2xl font-display font-bold text-foreground">📊 Admin Panel</h2>
+    <div className="space-y-4">
+      <h2 className="text-xl font-display font-bold text-foreground text-center pt-2">📊 Admin Panel</h2>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3">
-        <input
-          type="text"
-          placeholder="Search by name..."
-          value={search}
+      <div className="flex flex-col gap-2">
+        <input type="text" placeholder="Search name..." value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="px-3 py-2 rounded-lg bg-input/50 border border-border text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none"
+          className="px-3 py-2 rounded-xl bg-muted/50 border border-border text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none"
         />
-        <select
-          value={classFilter}
-          onChange={(e) => setClassFilter(e.target.value)}
-          className="px-3 py-2 rounded-lg bg-input/50 border border-border text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none"
-        >
-          <option value="">All Classes</option>
-          {CLASSES.map(c => <option key={c} value={c}>Class {c}</option>)}
-        </select>
-        <input
-          type="date"
-          value={dateFilter}
-          onChange={(e) => setDateFilter(e.target.value)}
-          className="px-3 py-2 rounded-lg bg-input/50 border border-border text-sm focus:ring-2 focus:ring-primary/30 focus:outline-none"
-        />
+        <div className="flex gap-2">
+          <select value={classFilter} onChange={(e) => setClassFilter(e.target.value)}
+            className="flex-1 px-3 py-2 rounded-xl bg-muted/50 border border-border text-xs focus:ring-2 focus:ring-primary/30 focus:outline-none"
+          >
+            <option value="">All Classes</option>
+            {CLASSES.map(c => <option key={c} value={c}>Class {c}</option>)}
+          </select>
+          <input type="date" value={dateFilter} onChange={(e) => setDateFilter(e.target.value)}
+            className="flex-1 px-3 py-2 rounded-xl bg-muted/50 border border-border text-xs focus:ring-2 focus:ring-primary/30 focus:outline-none"
+          />
+        </div>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-border">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-muted/70">
-              <th className="px-3 py-2 text-left">തിയതി</th>
-              <th className="px-3 py-2 text-left">പേര്</th>
-              <th className="px-3 py-2">ക്ലാസ്</th>
-              <th className="px-3 py-2">Score</th>
-              <th className="px-3 py-2">നമസ്‌കാരങ്ങൾ</th>
-              <th className="px-3 py-2">🗑️</th>
-            </tr>
-          </thead>
-          <tbody>
-            {entries.map((e, i) => (
-              <tr key={`${e.dateKey}-${e.name}`} className={i % 2 === 0 ? "bg-card/50" : "bg-muted/30"}>
-                <td className="px-3 py-2">{e.dateKey}</td>
-                <td className="px-3 py-2 font-medium">{e.name}</td>
-                <td className="px-3 py-2 text-center">{e.class}</td>
-                <td className="px-3 py-2 text-center font-bold text-accent">{e.score}/5</td>
-                <td className="px-3 py-2 text-center">
-                  {PRAYERS.map(p => (
-                    <span key={p.id} className={`inline-block mx-0.5 text-xs ${e[p.id as keyof PrayerEntry] ? "text-primary" : "text-muted-foreground/40"}`}>
-                      {e[p.id as keyof PrayerEntry] ? "✅" : "⬜"}
-                    </span>
-                  ))}
-                </td>
-                <td className="px-3 py-2 text-center">
-                  <button
-                    onClick={() => handleDelete(e.dateKey, e.name)}
-                    className="text-destructive hover:text-destructive/80 text-xs font-bold"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-            {entries.length === 0 && (
-              <tr><td colSpan={6} className="px-3 py-8 text-center text-muted-foreground">ഡാറ്റ ഇല്ല</td></tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      {loading ? (
+        <div className="flex justify-center py-8"><Loader2 className="animate-spin text-muted-foreground" /></div>
+      ) : (
+        <div className="space-y-2">
+          {entries.map((e) => (
+            <div key={`${e.dateKey}-${e.name}`} className="rounded-2xl border border-border bg-card/80 p-3 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold">{e.name}</p>
+                  <p className="text-[10px] text-muted-foreground">{e.dateKey} · ക്ലാസ് {e.class} · {e.score}/5</p>
+                </div>
+                <button onClick={() => handleDelete(e.dateKey, e.name)}
+                  className="text-destructive text-xs font-bold px-2 py-1 rounded-lg hover:bg-destructive/10"
+                >Delete</button>
+              </div>
+            </div>
+          ))}
+          {entries.length === 0 && <p className="text-center text-sm text-muted-foreground py-8">ഡാറ്റ ഇല്ല</p>}
+        </div>
+      )}
 
-      <button
-        onClick={downloadCSV}
-        className="px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity"
-      >
-        Download CSV 📥
-      </button>
+      <button onClick={downloadCSV}
+        className="w-full py-3 rounded-2xl bg-primary text-primary-foreground font-bold text-sm"
+      >Download CSV 📥</button>
     </div>
   );
 };

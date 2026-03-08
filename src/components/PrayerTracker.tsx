@@ -338,7 +338,7 @@ const PrayerTracker = ({ onSubmit }: { onSubmit: () => void }) => {
       {/* Prayer Status Modal */}
       {showPrayerModal && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end justify-center animate-fade-in" onClick={() => setShowPrayerModal(null)}>
-          <div className="bg-card w-full max-w-lg rounded-t-3xl p-6 space-y-3 safe-bottom animate-slide-in-bottom" onClick={e => e.stopPropagation()}>
+          <div className="bg-card w-full max-w-lg rounded-t-3xl p-6 space-y-3 animate-slide-in-bottom" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 16px) + 1.5rem)' }} onClick={e => e.stopPropagation()}>
             <div className="w-10 h-1 rounded-full bg-border mx-auto mb-2" />
             <h3 className="text-sm font-bold text-center text-foreground">
               {PRAYERS.find(p => p.id === showPrayerModal)?.label} - സ്റ്റാറ്റസ്

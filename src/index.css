@@ -52,6 +52,9 @@
     --green-light: 160 35% 45%;
     --cream: 150 20% 97%;
     --warm-gray: 160 10% 45%;
+    --salawat: 270 50% 55%;
+    --salawat-light: 270 40% 70%;
+    --salawat-foreground: 0 0% 100%;
   }
 
   .dark {
@@ -74,6 +77,9 @@
     --border: 160 12% 18%;
     --input: 160 12% 18%;
     --ring: 160 40% 38%;
+    --salawat: 270 45% 45%;
+    --salawat-light: 270 35% 60%;
+    --salawat-foreground: 0 0% 100%;
   }
 }
 

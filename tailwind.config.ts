@@ -24,6 +24,11 @@ export default {
         },
         "green-deep": "hsl(var(--green-deep))",
         "green-light": "hsl(var(--green-light))",
+        salawat: {
+          DEFAULT: "hsl(var(--salawat))",
+          light: "hsl(var(--salawat-light))",
+          foreground: "hsl(var(--salawat-foreground))",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

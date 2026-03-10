@@ -40,6 +40,7 @@ export type DailyRecord = {
   prayerScore: number;
   subjectScore: number;
   totalScore: number;
+  salawatCount: number; // separate from scoring
 };
 
 export const PRAYERS = [
@@ -234,7 +235,7 @@ export async function getCumulativeScore(studentId: string): Promise<number> {
 
 // ====== LEADERBOARD ======
 
-export type LeaderEntry = { studentName: string; studentId: string; classId: string; totalScore: number };
+export type LeaderEntry = { studentName: string; studentId: string; classId: string; totalScore: number; totalSalawat: number };
 
 export async function getLeaderboard(
   startDate: string,
@@ -247,9 +248,10 @@ export async function getLeaderboard(
 
   for (const r of records) {
     if (!scores[r.studentId]) {
-      scores[r.studentId] = { studentName: r.studentName, studentId: r.studentId, classId: r.classId, totalScore: 0 };
+      scores[r.studentId] = { studentName: r.studentName, studentId: r.studentId, classId: r.classId, totalScore: 0, totalSalawat: 0 };
     }
     scores[r.studentId].totalScore += r.totalScore;
+    scores[r.studentId].totalSalawat += (r.salawatCount || 0);
   }
 
   return Object.values(scores)

@@ -31,6 +31,7 @@ const PrayerTracker = ({ onSubmit }: { onSubmit: () => void }) => {
     fajr: "not_prayed", dhuhr: "not_prayed", asr: "not_prayed", maghrib: "not_prayed", isha: "not_prayed",
   });
   const [subjectStatus, setSubjectStatus] = useState<Record<string, boolean>>({});
+  const [salawatCount, setSalawatCount] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
   const [showPrayerModal, setShowPrayerModal] = useState<string | null>(null);
@@ -89,11 +90,13 @@ const PrayerTracker = ({ onSubmit }: { onSubmit: () => void }) => {
         if (rec) {
           setPrayers({ fajr: rec.fajr, dhuhr: rec.dhuhr, asr: rec.asr, maghrib: rec.maghrib, isha: rec.isha });
           setSubjectStatus(rec.subjects || {});
+          setSalawatCount(rec.salawatCount || 0);
         } else {
           setPrayers({ fajr: "not_prayed", dhuhr: "not_prayed", asr: "not_prayed", maghrib: "not_prayed", isha: "not_prayed" });
           const subInit: Record<string, boolean> = {};
           subjects.forEach(sub => { subInit[sub.id] = false; });
           setSubjectStatus(subInit);
+          setSalawatCount(0);
         }
       });
     }
@@ -129,6 +132,7 @@ const PrayerTracker = ({ onSubmit }: { onSubmit: () => void }) => {
         prayerScore,
         subjectScore: subScore,
         totalScore,
+        salawatCount,
       };
       await saveRecord(record);
       toast({ title: "✅ സേവ് ചെയ്തു!", description: `${student.name} - ${totalScore} പോയിന്റ്` });
@@ -385,6 +389,42 @@ const PrayerTracker = ({ onSubmit }: { onSubmit: () => void }) => {
           </div>
         </div>
       )}
+
+      {/* Salawat Section */}
+      <div className="space-y-3">
+        <label className="block text-xs font-semibold text-muted-foreground flex items-center gap-1.5">
+          <Sparkles size={14} className="text-salawat" /> സ്വലാത്ത് രേഖപ്പെടുത്തുക (Salawat Count)
+        </label>
+        <div className="rounded-2xl border-2 border-salawat/20 bg-salawat/5 p-4 space-y-3">
+          <div className="flex items-center justify-center gap-2">
+            <Sparkles size={20} className="text-salawat" />
+            <span className="text-2xl font-bold text-salawat">{salawatCount}</span>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {[10, 50, 100].map(n => (
+              <button key={n} type="button" disabled={!editable}
+                onClick={() => setSalawatCount(prev => prev + n)}
+                className="py-3 rounded-xl bg-salawat text-salawat-foreground font-bold text-sm shadow-md shadow-salawat/20 active:scale-95 transition-all disabled:opacity-50"
+              >+{n}</button>
+            ))}
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min="0"
+              value={salawatCount}
+              onChange={e => setSalawatCount(Math.max(0, parseInt(e.target.value) || 0))}
+              disabled={!editable}
+              className="flex-1 px-3 py-2.5 rounded-xl border-2 border-salawat/30 bg-card text-center text-sm font-bold focus:ring-2 focus:ring-salawat/30 focus:outline-none disabled:opacity-50"
+              placeholder="എണ്ണം"
+            />
+            <button type="button" disabled={!editable}
+              onClick={() => setSalawatCount(0)}
+              className="px-3 py-2.5 rounded-xl border-2 border-border text-xs font-bold text-muted-foreground hover:border-destructive/30 active:scale-95 transition-all disabled:opacity-50"
+            >↺</button>
+          </div>
+        </div>
+      </div>
 
       {/* Submit */}
       <button type="submit" disabled={submitting || !editable}

@@ -31,6 +31,7 @@ const PrayerTracker = ({ onSubmit }: { onSubmit: () => void }) => {
     fajr: "not_prayed", dhuhr: "not_prayed", asr: "not_prayed", maghrib: "not_prayed", isha: "not_prayed",
   });
   const [subjectStatus, setSubjectStatus] = useState<Record<string, boolean>>({});
+  const [salawatCount, setSalawatCount] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
   const [showPrayerModal, setShowPrayerModal] = useState<string | null>(null);

@@ -172,7 +172,14 @@ const History = () => {
                     <p className="text-sm font-bold text-foreground">{e.studentName}</p>
                     <p className="text-[10px] text-muted-foreground">{e.date}</p>
                   </div>
-                  <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full">{e.totalScore} pt</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full">{e.totalScore} pt</span>
+                    {(e.salawatCount || 0) > 0 && (
+                      <span className="text-[10px] font-bold text-salawat bg-salawat/10 px-2 py-1 rounded-full flex items-center gap-0.5">
+                        <Sparkles size={10} /> {e.salawatCount}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="flex gap-1.5">
                   {PRAYERS.map((p, i) => {

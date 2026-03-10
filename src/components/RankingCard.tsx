@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getLeaderboard, getDateRangeForPeriod, type LeaderEntry } from "@/lib/firestoreService";
+import { Sparkles } from "lucide-react";
 
 type RankingProps = {
   title: string;
@@ -36,9 +37,16 @@ const RankingCard = ({ title, period, topN, classFilter, refreshKey }: RankingPr
           {performers.map((p, i) => (
             <li key={p.studentId} className="flex items-center justify-between rounded-xl px-3 py-2 bg-muted/50">
               <span className="text-xs font-medium">{ICONS[i] || "🔹"} {p.studentName}</span>
-              <span className="text-[10px] font-bold text-accent bg-accent/10 px-2 py-0.5 rounded-full">
-                {p.totalScore} pt
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold text-accent bg-accent/10 px-2 py-0.5 rounded-full">
+                  {p.totalScore} pt
+                </span>
+                {p.totalSalawat > 0 && (
+                  <span className="text-[10px] font-bold text-salawat bg-salawat/10 px-2 py-0.5 rounded-full flex items-center gap-0.5">
+                    <Sparkles size={8} /> {p.totalSalawat}
+                  </span>
+                )}
+              </div>
             </li>
           ))}
         </ul>

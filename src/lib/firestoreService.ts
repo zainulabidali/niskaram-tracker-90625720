@@ -235,7 +235,7 @@ export async function getCumulativeScore(studentId: string): Promise<number> {
 
 // ====== LEADERBOARD ======
 
-export type LeaderEntry = { studentName: string; studentId: string; classId: string; totalScore: number };
+export type LeaderEntry = { studentName: string; studentId: string; classId: string; totalScore: number; totalSalawat: number };
 
 export async function getLeaderboard(
   startDate: string,

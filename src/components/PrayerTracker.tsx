@@ -90,11 +90,13 @@ const PrayerTracker = ({ onSubmit }: { onSubmit: () => void }) => {
         if (rec) {
           setPrayers({ fajr: rec.fajr, dhuhr: rec.dhuhr, asr: rec.asr, maghrib: rec.maghrib, isha: rec.isha });
           setSubjectStatus(rec.subjects || {});
+          setSalawatCount(rec.salawatCount || 0);
         } else {
           setPrayers({ fajr: "not_prayed", dhuhr: "not_prayed", asr: "not_prayed", maghrib: "not_prayed", isha: "not_prayed" });
           const subInit: Record<string, boolean> = {};
           subjects.forEach(sub => { subInit[sub.id] = false; });
           setSubjectStatus(subInit);
+          setSalawatCount(0);
         }
       });
     }

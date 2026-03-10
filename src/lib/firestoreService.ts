@@ -248,9 +248,10 @@ export async function getLeaderboard(
 
   for (const r of records) {
     if (!scores[r.studentId]) {
-      scores[r.studentId] = { studentName: r.studentName, studentId: r.studentId, classId: r.classId, totalScore: 0 };
+      scores[r.studentId] = { studentName: r.studentName, studentId: r.studentId, classId: r.classId, totalScore: 0, totalSalawat: 0 };
     }
     scores[r.studentId].totalScore += r.totalScore;
+    scores[r.studentId].totalSalawat += (r.salawatCount || 0);
   }
 
   return Object.values(scores)

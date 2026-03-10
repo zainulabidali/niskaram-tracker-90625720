@@ -77,6 +77,9 @@
     --border: 160 12% 18%;
     --input: 160 12% 18%;
     --ring: 160 40% 38%;
+    --salawat: 270 45% 45%;
+    --salawat-light: 270 35% 60%;
+    --salawat-foreground: 0 0% 100%;
   }
 }
 

@@ -5,7 +5,7 @@ import {
   PRAYERS, getTodayStr,
   type DailyRecord, type ClassData, type StudentData,
 } from "@/lib/firestoreService";
-import { Sunrise, Sun, CloudSun, Sunset, Moon, Loader2, GraduationCap, User, CalendarDays, Search, X, ChevronRight } from "lucide-react";
+import { Sunrise, Sun, CloudSun, Sunset, Moon, Loader2, GraduationCap, User, CalendarDays, Search, X, ChevronRight, Sparkles } from "lucide-react";
 import { format } from "date-fns";
 
 const PRAYER_ICONS = [Sunrise, Sun, CloudSun, Sunset, Moon];

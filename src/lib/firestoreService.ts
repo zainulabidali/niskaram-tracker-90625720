@@ -40,6 +40,7 @@ export type DailyRecord = {
   prayerScore: number;
   subjectScore: number;
   totalScore: number;
+  salawatCount: number; // separate from scoring
 };
 
 export const PRAYERS = [

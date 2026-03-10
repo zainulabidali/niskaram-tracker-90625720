@@ -132,6 +132,7 @@ const PrayerTracker = ({ onSubmit }: { onSubmit: () => void }) => {
         prayerScore,
         subjectScore: subScore,
         totalScore,
+        salawatCount,
       };
       await saveRecord(record);
       toast({ title: "✅ സേവ് ചെയ്തു!", description: `${student.name} - ${totalScore} പോയിന്റ്` });
